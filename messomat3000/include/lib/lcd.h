@@ -5,7 +5,7 @@
  Author:    Peter Fleury <pfleury@gmx.ch>  http://tinyurl.com/peterfleury
  File:	    $Id: lcd.h,v 1.14.2.4 2015/01/20 17:16:07 peter Exp $
  Software:  AVR-GCC 4.x
- Hardware:  any AVR device, memory mapped mode only for AVR with 
+ Hardware:  any AVR device, memory mapped mode only for AVR with
             memory mapped interface (AT90S8515/ATmega8515/ATmega128)
 ***************************************************************************/
 
@@ -14,32 +14,32 @@
  Collection of libraries for AVR-GCC
  @author Peter Fleury pfleury@gmx.ch http://tinyurl.com/peterfleury
  @copyright (C) 2015 Peter Fleury, GNU General Public License Version 3
- 
+
  @file
  @defgroup pfleury_lcd LCD library <lcd.h>
  @code #include <lcd.h> @endcode
- 
+
  @brief Basic routines for interfacing a HD44780U-based character LCD display
 
- LCD character displays can be found in many devices, like espresso machines, laser printers. 
- The Hitachi HD44780 controller and its compatible controllers like Samsung KS0066U have become an industry standard for these types of displays. 
- 
+ LCD character displays can be found in many devices, like espresso machines, laser printers.
+ The Hitachi HD44780 controller and its compatible controllers like Samsung KS0066U have become an industry standard for these types of displays.
+
  This library allows easy interfacing with a HD44780 compatible display and can be
- operated in memory mapped mode (LCD_IO_MODE defined as 0 in the include file lcd.h.) or in 
+ operated in memory mapped mode (LCD_IO_MODE defined as 0 in the include file lcd.h.) or in
  4-bit IO port mode (LCD_IO_MODE defined as 1). 8-bit IO port mode is not supported.
 
  Memory mapped mode is compatible with old Kanda STK200 starter kit, but also supports
  generation of R/W signal through A8 address line.
 
  @see The chapter <a href=" http://homepage.hispeed.ch/peterfleury/avr-lcd44780.html" target="_blank">Interfacing a HD44780 Based LCD to an AVR</a>
-      on my home page, which shows example circuits how to connect an LCD to an AVR controller. 
+      on my home page, which shows example circuits how to connect an LCD to an AVR controller.
 
  @author Peter Fleury pfleury@gmx.ch http://tinyurl.com/peterfleury
- 
+
  @version   2.0
- 
+
  @copyright (C) 2015 Peter Fleury, GNU General Public License Version 3
-  
+
 */
 
 #include <inttypes.h>
@@ -53,7 +53,7 @@
 /**@{*/
 
 /*
- * LCD and target specific definitions below can be defined in a separate include file with name lcd_definitions.h instead modifying this file 
+ * LCD and target specific definitions below can be defined in a separate include file with name lcd_definitions.h instead modifying this file
  * by adding -D_LCD_DEFINITIONS_FILE to the CDEFS section in the Makefile
  * All definitions added to the file lcd_definitions.h will override the default definitions from lcd.h
  */
@@ -66,15 +66,15 @@
  * @name  Definition for LCD controller type
  * Use 0 for HD44780 controller, change to 1 for displays with KS0073 controller.
  */
-#ifndef LCD_CONTROLLER_KS0073 
+#ifndef LCD_CONTROLLER_KS0073
 #define LCD_CONTROLLER_KS0073 0  /**< Use 0 for HD44780 controller, 1 for KS0073 controller */
 #endif
 
-/** 
- * @name  Definitions for Display Size 
+/**
+ * @name  Definitions for Display Size
  * Change these definitions to adapt setting to your display
  *
- * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by 
+ * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by
  * adding -D_LCD_DEFINITIONS_FILE to the CDEFS section in the Makefile.
  * All definitions added to the file lcd_definitions.h will override the default definitions from lcd.h
  *
@@ -108,20 +108,20 @@
 /**
  * @name Definitions for 4-bit IO mode
  *
- * The four LCD data lines and the three control lines RS, RW, E can be on the 
- * same port or on different ports. 
+ * The four LCD data lines and the three control lines RS, RW, E can be on the
+ * same port or on different ports.
  * Change LCD_RS_PORT, LCD_RW_PORT, LCD_E_PORT if you want the control lines on
- * different ports. 
+ * different ports.
  *
  * Normally the four data lines should be mapped to bit 0..3 on one port, but it
  * is possible to connect these data lines in different order or even on different
  * ports by adapting the LCD_DATAx_PORT and LCD_DATAx_PIN definitions.
  *
- * Adjust these definitions to your target.\n 
- * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by 
+ * Adjust these definitions to your target.\n
+ * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by
  * adding \b -D_LCD_DEFINITIONS_FILE to the \b CDEFS section in the Makefile.
  * All definitions added to the file lcd_definitions.h will override the default definitions from lcd.h
- *  
+ *
  */
 #define LCD_IO_MODE      1            /**< 0: memory mapped mode, 1: IO port mode */
 
@@ -194,8 +194,8 @@
  * Used to calculate delay timers.
  * Adapt the F_CPU define in the Makefile to the clock frequency in Hz of your target
  *
- * These delay times can be adjusted, if some displays require different delays.\n 
- * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by 
+ * These delay times can be adjusted, if some displays require different delays.\n
+ * These definitions can be defined in a separate include file \b lcd_definitions.h instead modifying this file by
  * adding \b -D_LCD_DEFINITIONS_FILE to the \b CDEFS section in the Makefile.
  * All definitions added to the file lcd_definitions.h will override the default definitions from lcd.h
  */
@@ -209,7 +209,7 @@
 #define LCD_DELAY_INIT_REP    64      /**< delay in micro seconds after initialization command repeated */
 #endif
 #ifndef LCD_DELAY_INIT_4BIT
-#define LCD_DELAY_INIT_4BIT   64      /**< delay in micro seconds after setting 4-bit mode */ 
+#define LCD_DELAY_INIT_4BIT   64      /**< delay in micro seconds after setting 4-bit mode */
 #endif
 #ifndef LCD_DELAY_BUSY_FLAG
 #define LCD_DELAY_BUSY_FLAG    4      /**< time in micro seconds the address counter is updated after busy flag is cleared */
@@ -221,7 +221,7 @@
 
 /**
  * @name Definitions for LCD command instructions
- * The constants define the various LCD controller instructions which can be passed to the 
+ * The constants define the various LCD controller instructions which can be passed to the
  * function lcd_command(), see HD44780 data sheet for a complete description.
  */
 
@@ -276,7 +276,7 @@
 
 
 
-/** 
+/**
  *  @name Functions
  */
 
@@ -286,7 +286,7 @@
  @param    dispAttr \b LCD_DISP_OFF display off\n
                     \b LCD_DISP_ON display on, cursor off\n
                     \b LCD_DISP_ON_CURSOR display on, cursor on\n
-                    \b LCD_DISP_ON_CURSOR_BLINK display on, cursor on flashing             
+                    \b LCD_DISP_ON_CURSOR_BLINK display on, cursor on flashing
  @return  none
 */
 extern void lcd_init(uint8_t dispAttr);
@@ -308,7 +308,7 @@ extern void lcd_home(void);
 
 /**
  @brief    Set cursor to specified position
- 
+
  @param    x horizontal position\n (0: left most position)
  @param    y vertical position\n   (0: first line)
  @return   none
@@ -318,7 +318,7 @@ extern void lcd_gotoxy(uint8_t x, uint8_t y);
 
 /**
  @brief    Display character at current cursor position
- @param    c character to be displayed                                       
+ @param    c character to be displayed
  @return   none
 */
 extern void lcd_putc(char c);
@@ -326,7 +326,7 @@ extern void lcd_putc(char c);
 
 /**
  @brief    Display string without auto linefeed
- @param    s string to be displayed                                        
+ @param    s string to be displayed
  @return   none
 */
 extern void lcd_puts(const char *s);
@@ -334,7 +334,7 @@ extern void lcd_puts(const char *s);
 
 /**
  @brief    Display string from program memory without auto linefeed
- @param    progmem_s string from program memory be be displayed                                        
+ @param    progmem_s string from program memory be be displayed
  @return   none
  @see      lcd_puts_P
 */
@@ -350,8 +350,8 @@ extern void lcd_command(uint8_t cmd);
 
 
 /**
- @brief    Send data byte to LCD controller 
- 
+ @brief    Send data byte to LCD controller
+
  Similar to lcd_putc(), but without interpreting LF
  @param    data byte to send to LCD controller, see HD44780 data sheet
  @return   none

@@ -1,9 +1,12 @@
+//
+// Created by Daniel Hochegger on 17.01.2023.
+//
 #ifndef global_def
 #define global_def
 
-#include "custom//imports.h"
+#include "imports.h"
 
-typedef struct _versionControl
+typedef struct versionControl
 {
     uint8_t size;
     uint8_t MajorVersion;

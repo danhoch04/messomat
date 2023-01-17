@@ -1,7 +1,6 @@
 //
-// Created by Daniel Hochegger on 19.12.2022.
+// Created by Daniel Hochegger on 17.01.2023.
 //
-
 #include "custom/uart.h"
 
 #define UART_START "<"
@@ -16,8 +15,8 @@ volatile int storageIndex = 0;
 
 extern int16_t lightValue;
 extern bool digitalStatus;
-extern uint8_t timerValue;
-extern versionControl myVersionControl;
+extern uint8_t timer1Val;
+extern versionControl vc;
 
 void uartSetup() {
     uart_init(UART_BAUD_SELECT(UART_BAUD_RATE, F_CPU));
@@ -26,9 +25,9 @@ void uartSetup() {
 void uartWorker(void) {
     uartReadFrame();
 
-    if (timerValue == myVersionControl.TransmitInterval && myVersionControl.TransmitInterval != 0) {
+    if (timer1Val == vc.TransmitInterval && vc.TransmitInterval != 0) {
         uartBuildFrame();
-        timerValue = 0;
+        timer1Val = 0;
     }
 }
 
