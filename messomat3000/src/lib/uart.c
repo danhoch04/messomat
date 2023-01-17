@@ -36,10 +36,10 @@ LICENSE:
     GNU General Public License for more details.
 
 *************************************************************************/
-#include "avr/io.h"
-#include "avr/interrupt.h"
-#include "avr/pgmspace.h"
-#include "lib/uart.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+#include "custom/uart.h"
 
 
 /*

@@ -9,10 +9,14 @@
 #include "custom/adc.h"
 #include "custom/timer.h"
 #include "custom/button.h"
+#include "custom/eeprom.h"
+#include "lib/lcd.h"
+#include "custom/uart.h"
 
 #define UART_BAUD_RATE 9600
 
 extern int16_t lightValue;
+extern bool digitalStatus;
 char buffer[7];
 volatile versionControl vc = {sizeof(vc), 1, 23, 12, 1, 0};
 
@@ -21,17 +25,19 @@ int main() {
     adcSetup();
     buttonSetup();
     timerSetup();
-    uartSetup();
+    uart_setup();
+    eeprom_init();
     while(1){
-        uartWorker();
+        uart_worker();
         adcWorker();
         lcd_gotoxy(0, 0);
         lcd_puts(dtostrf(lightValue, 0, 4, buffer));
         lcd_gotoxy(15,0);
         lcd_puts(dtostrf(vc.TransmitInterval, 0, 4, buffer));
-        vc.CRC = crc_8((const unsigned char *)&vc,vc.size-1);
-        eeprom_update_block(&vc,0,vc.size);
+        lcd_gotoxy(0,1);
+        lcd_puts(digitalStatus ? "0" : "1");
         buttonWorker();
         timerWorker();
+        eeprom_save();
     }
 }

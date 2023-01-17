@@ -16,7 +16,7 @@ static bool buttonThree = false;
 extern versionControl vc;
 
 void buttonSetup(void){
-    DDRD|= (1 << PD2); //LED data direction
+    DDRB|= (1 << PB3); //LED data direction
     PORTB |= ((1 << PORTB0) | (1 << PORTB1) | (1 << PORTB2)); // Pull-up on PB0, PB1, PB2
 
     PCICR |= (1 << PCIE0); // PCINT0 enable
@@ -85,7 +85,8 @@ void button2Pressed(void){
     buttonTwo = false;
 }
 void button3Pressed(void){
-    PORTD ^= (1 << PD2);
+    digitalStatus = !digitalStatus;
+    PORTB ^= (1 << PB2);
 }
 
 ISR(PCINT0_vect) {

@@ -6,99 +6,155 @@
 #define UART_START "<"
 #define UART_END ">"
 
-volatile bool sendAllMeasurements = false;
-volatile bool sendLightValue = false;
-volatile bool sendDigitalStatus = false;
+char uart_mode = '\0';
 
-char storage[128] = "";
-volatile int storageIndex = 0;
+char uart_storage[8] = "";
+volatile int uart_storage_index = 0;
 
 extern int16_t lightValue;
 extern bool digitalStatus;
 extern uint8_t timer1Val;
+uint8_t last_timer_val = 0;
 extern versionControl vc;
 
-void uartSetup() {
+void uart_setup()
+{
     uart_init(UART_BAUD_SELECT(UART_BAUD_RATE, F_CPU));
 }
 
-void uartWorker(void) {
-    uartReadFrame();
+void uart_worker(void)
+{
+    uart_readUartFrame();
 
-    if (timer1Val == vc.TransmitInterval && vc.TransmitInterval != 0) {
-        uartBuildFrame();
-        timer1Val = 0;
+    if (((timer1Val - last_timer_val) >= vc.TransmitInterval) && (vc.TransmitInterval != 0))
+    {
+        uart_buildFrame();
+
+        last_timer_val = timer1Val;
     }
 }
 
-void uartBuildFrame(void) {
-    char sendData[128] = "";
-    if (sendAllMeasurements) {
-        strcat(sendData, "lightLevel: ");
-        char measurementsString[128];
-        strcat(sendData, utoa(lightValue, measurementsString, 10));
-        strcat(sendData, ", ");
-
-        strcat(sendData, "button: ");
-        strcat(sendData, digitalStatus ? "on" : "off");
+uint8_t uart_storage_length()
+{
+    int length = 0;
+    while (uart_storage[length] != '\0')
+    {
+        length++;
     }
-
-    if (sendLightValue) {
-        strcat(sendData, "lightLevel: ");
-        char measurementsString[128];
-        strcat(sendData, utoa(lightValue, measurementsString, 10));
-        strcat(sendData, ", ");
-    }
-    if (sendDigitalStatus) {
-        strcat(sendData, "button: ");
-        strcat(sendData, digitalStatus ? "on" : "off");
-    }
-    uartSendFrame(sendData);
+    return length;
 }
 
-void uartReadFrame(void) {
-    char uartValue = uart_getc();
+void uart_buildFrame()
+{
+    if (uart_mode == 'a')
+    {
+        char data[128] = "";
+        strcat(data, "luminosity:");
+        char uart_a_string[128];
+        strcat(data, utoa(lightValue, uart_a_string, 10));
+        strcat(data, ",");
+
+        strcat(data, "switch:");
+        strcat(data, digitalStatus ? "on" : "off");
+        strcat(data, ",");
+
+        strcat(data, "intervall:");
+        char uart_b_string[128];
+        strcat(data, utoa(vc.TransmitInterval, uart_b_string, 10));
+
+        uart_sendFrame(data);
+    }
+    else if (uart_mode == 'l')
+    {
+        char data[128] = "";
+        strcat(data, "luminosity:");
+        char uart_a_string[128];
+        strcat(data, utoa(lightValue, uart_a_string, 10));
+
+        uart_sendFrame(data);
+    }
+    else if (uart_mode == 's')
+    {
+        char data[128] = "";
+
+        strcat(data, "switch:");
+        strcat(data, digitalStatus ? "on" : "off");
+
+        uart_sendFrame(data);
+    }
+}
+
+void uart_readUartFrame()
+{
+    int uartValue = uart_getc();
     uart_putc(uartValue);
 
-    if (uartValue == UART_NO_DATA || uartValue == '\0')
+    if (uartValue == UART_NO_DATA)
         return;
 
-    if (uartValue == UART_START[0]) {
-        storageIndex = 0;
-        for (int i = 0; i < 128; i++)
-            storage[i] = '\0';
-        return;
-    }
-
-    if (uartValue == UART_END[0]) {
-        if (strcmp(storage, "a") == 0) {
-            sendAllMeasurements = true;
-            sendLightValue = false;
-            sendDigitalStatus = false;
-        } else if (strcmp(storage, "t") == 0) {
-            sendAllMeasurements = false;
-            sendLightValue = true;
-            sendDigitalStatus = false;
-        } else if (strcmp(storage, "s") == 0) {
-            sendAllMeasurements = false;
-            sendLightValue = false;
-            sendDigitalStatus = true;
-        } else if (strcmp(storage, "q") == 0) {
-            sendAllMeasurements = false;
-            sendLightValue = false;
-            sendDigitalStatus = false;
+    if (uartValue == UART_START[0])
+    {
+        for (uint8_t i = 0; i < sizeof(uart_storage); i++)
+        {
+            uart_storage[i] = '\0';
+            uart_storage_index = 0;
         }
         return;
     }
 
-    storage[storageIndex] = uartValue;
-    storageIndex++;
+    if (uartValue == UART_END[0])
+    {
+        if (uart_storage_length() == 1)
+        {
+            if (uart_storage[0] == 'a')
+            {
+                uart_mode = 'a';
+            }
+            else if (uart_storage[0] == 'l')
+            {
+                uart_mode = 'l';
+            }
+            else if (uart_storage[0] == 's')
+            {
+                uart_mode = 's';
+            }
+            else if (uart_storage[0] == 'q')
+            {
+                uart_mode = '\0';
+            }
+        }
+        else if (uart_storage_length() == 3)
+        {
+            if (uart_storage[0] == 't' && uart_storage[1] == 'r')
+            {
+                // if uart_storage[2] is between 0 and 4
+                switch (uart_storage[2])
+                {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                        vc.TransmitInterval = uart_storage[2] - '0';
+                        eeprom_save();
+                        break;
+                }
+            }
+        }
+        return;
+    }
+
+    uart_storage[uart_storage_index] = uartValue;
+    uart_storage_index++;
 }
 
-void uartSendFrame(char *data) {
+void uart_sendFrame(char *data)
+{
     char frame[128] = "";
     strcat(frame, UART_START);
     strcat(frame, data);
     strcat(frame, UART_END);
+
     uart_puts(frame);
+    // uart_putc(13);
 }
