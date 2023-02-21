@@ -3,8 +3,11 @@
 //
 #include "custom/uart.h"
 
-#define UART_START "<"
-#define UART_END ">"
+#define UART_START "\02"
+#define UART_END "\03"
+#define UART_ACK "\06"
+#define UART_NACK "\21"
+
 
 char uart_mode = '\0';
 
@@ -49,35 +52,37 @@ void uart_buildFrame()
     if (uart_mode == 'a')
     {
         char data[128] = "";
-        strcat(data, "luminosity:");
+        strcat(data, "A:");
+        strcat(data, "LV:");
         char uart_a_string[128];
         strcat(data, utoa(lightValue, uart_a_string, 10));
-        strcat(data, ",");
+        strcat(data, ";");
 
-        strcat(data, "switch:");
+        strcat(data, "BV:");
         strcat(data, digitalStatus ? "on" : "off");
-        strcat(data, ",");
 
-        strcat(data, "intervall:");
+        /* INTERVALL SENDEN
+         * strcat(data, "intervall:");
         char uart_b_string[128];
         strcat(data, utoa(vc.TransmitInterval, uart_b_string, 10));
+         */
 
         uart_sendFrame(data);
     }
     else if (uart_mode == 'l')
     {
         char data[128] = "";
-        strcat(data, "luminosity:");
+        strcat(data, "LV:");
         char uart_a_string[128];
         strcat(data, utoa(lightValue, uart_a_string, 10));
 
         uart_sendFrame(data);
     }
-    else if (uart_mode == 's')
+    else if (uart_mode == 'b')
     {
         char data[128] = "";
 
-        strcat(data, "switch:");
+        strcat(data, "BV:");
         strcat(data, digitalStatus ? "on" : "off");
 
         uart_sendFrame(data);
@@ -92,7 +97,7 @@ void uart_readUartFrame()
     if (uartValue == UART_NO_DATA)
         return;
 
-    if (uartValue == UART_START[0])
+    if (uartValue == '<') // Plathalter für STX, weil mit Putty nicht sendbar
     {
         for (uint8_t i = 0; i < sizeof(uart_storage); i++)
         {
@@ -102,25 +107,33 @@ void uart_readUartFrame()
         return;
     }
 
-    if (uartValue == UART_END[0])
+    if (uartValue == '>') // Plathalter für ETX, weil mit Putty nicht sendbar
     {
         if (uart_storage_length() == 1)
         {
             if (uart_storage[0] == 'a')
             {
                 uart_mode = 'a';
+                uart_sendFrame(UART_ACK);
             }
             else if (uart_storage[0] == 'l')
             {
                 uart_mode = 'l';
+                uart_sendFrame(UART_ACK);
+            }
+            else if (uart_storage[0] == 'b')
+            {
+                uart_mode = 'b';
+                uart_sendFrame(UART_ACK);
             }
             else if (uart_storage[0] == 's')
             {
                 uart_mode = 's';
+                uart_sendFrame(UART_ACK);
             }
-            else if (uart_storage[0] == 'q')
-            {
-                uart_mode = '\0';
+            else{
+                uart_mode = 'F';
+                uart_sendFrame(UART_NACK);
             }
         }
         else if (uart_storage_length() == 3)
